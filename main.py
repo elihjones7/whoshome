@@ -1,5 +1,3 @@
-
-from argparse import ArgumentParser
 import json
 import eero
 import six
@@ -30,43 +28,47 @@ def print_json(data):
     print(json.dumps(data, indent=4))
 
 if __name__ == '__main__':
-    if eero.needs_login():
-        parser = ArgumentParser()
-        parser.add_argument("-l", help = "your eero login (email address or phone number)")
-        args = parser.parse_args()
-        if args.l:
-            phone_number = args.l
-        else:
-            phone_number = six.moves.input('your eero login (email address or phone number): ')
+    while eero.needs_login():
+        phone_number = six.moves.input('your eero login (email address or phone number): ')
         user_token = eero.login(phone_number)
         verification_code = six.moves.input('verification key from email or SMS: ')
         eero.login_verify(verification_code, user_token)
-        print('Login successful. Rerun this command to get some output')
-    else:
+        print('Login successful')
 
-        #this is where i mess with things for GUI
-        account = eero.account()
+    #this is where i mess with things for GUI
+    account = eero.account()
 
-        parser = ArgumentParser()
-        parser.add_argument("command",
-                            choices=['devices', 'details', 'info', 'eeros', 'reboot'],
-                            help = "info to print")
-        parser.add_argument("--eero", type=int, help="eero to reboot")
-        args = parser.parse_args()
+    print('Command options: info, details, devices, eeros, reboot')
+    command = six.moves.input('enter a command: ')
 
-        for network in account['networks']['data']:
-            if args.command == 'info':
-                print_json(network)
-            if args.command == 'details':
-                network_details = eero.networks(network['url'])
-                print_json(network_details)
-            if args.command == 'devices':
-                devices = eero.devices(network['url'])
-                print_json(devices)
-            if args.command == 'eeros':
-                eeros = eero.eeros(network['url'])
-                print_json(eeros)
-            if args.command == 'reboot':
-                reboot = eero.reboot(args.eero)
+    for network in account['networks']['data']:
+        if command == 'info':                       #just gives network name
+            print_json(network)
+        if command == 'details':                     #gives details on network
+            network_details = eero.networks(network['url'])
+            print_json(network_details)
+        if command == 'devices':                    #gives devices and details on devices
+            devices = eero.devices(network['url'])
+            print_json(devices)
+        if command == 'eeros':                      #gives details on gateway, routers, and boosters
+            eeros = eero.eeros(network['url'])
+            print_json(eeros)
+        if command == 'reboot':                     #reboots an eero device
+            print('Eero options are: office , upstairs (gateway), family room, hallway')
+            name = six.moves.input('Name of Eero to be rebooted: ')
+
+            if name == 'office':
+                reboot = eero.reboot()
                 print_json(reboot)
+            elif name == 'upstairs':
+                reboot = eero.reboot()
+                print_json(reboot)
+            elif name == 'family room':
+                reboot = eero.reboot()
+                print_json(reboot)
+            elif name == 'hallway':
+                reboot = eero.reboot()
+                print_json(reboot)
+            else:
+                print('Please put in a valid name')
 
