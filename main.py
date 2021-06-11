@@ -24,6 +24,43 @@ class CookieStore(eero.SessionStorage):
 session = CookieStore('session.cookie')
 eero = eero.Eero(session)
 
+def print_connected_devices(data):
+    device = ""
+    count = 3
+    flag = False
+    for item in data.split("\n"):
+        if count > 0:
+            count = count - 1
+            if "phone" in item or "Phone" in item:
+                flag = True
+            device = device + "\n" + item.strip()
+            continue
+        if "connected" in item:
+            count = 2
+            device = device + "\n" + item.strip()
+            if "true" in item:
+                if flag:
+                    print(device)
+                    flag = False
+
+            device = ""
+
+
+def parse_json(data):
+    data_string = json.dumps(data, indent=4)
+    count = 0
+    parsed_string = ""
+    for item in data_string.split("\n"):
+        if count > 0:
+            count = count - 1
+            parsed_string = parsed_string + "\n" + item.strip()
+            continue
+        if "nickname" in item:
+            count = 2
+            parsed_string = parsed_string + "\n" + item.strip()
+
+    print_connected_devices(parsed_string)
+
 def print_json(data):
     print(json.dumps(data, indent=4))
 
@@ -49,7 +86,7 @@ if __name__ == '__main__':
             print_json(network_details)
         if command == 'devices':                    #gives devices and details on devices
             devices = eero.devices(network['url'])
-            print_json(devices)
+            parse_json(devices)
         if command == 'eeros':                      #gives details on gateway, routers, and boosters
             eeros = eero.eeros(network['url'])
             print_json(eeros)
